@@ -30,6 +30,16 @@ EMAIL_REGEX = re.compile(
 def is_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
+def get_username(id):
+    if not id:
+        return None
+    
+    try:
+        user = db_utils.find_one({"_id": ObjectId(id)}, {"username": 1})
+        return user['username'] if user else None
+    except(InvalidId, TypeError):
+        return None
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -84,11 +94,31 @@ def register():
         session['pending_user'] = mail
         return redirect(url_for('verify_email'))
     else:
-        return render_template('register.html')
+        return render_template('register.html')    
     
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-    return abort(500)
+    if 'util' in session:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        user = request.form['user']
+        pswd = request.form['password']
+
+        user_found = db_utils.find_one({'username': user})
+
+        if not user_found or not bcrypt.checkpw(pswd.encode('utf-8'), user_found['password']):
+            return render_template("login.html", erreur="Identifiants incorrects")
+        
+        session['util'] = str(user_found['_id'])
+        return redirect(url_for('index'))
+    else:
+        return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 @app.route("/verify_email", methods=['GET', 'POST'])
 def verify_email():
@@ -118,7 +148,7 @@ def verify_email():
             )
             return render_template("verify_mail.html", erreur="Code incorrect")
         
-        db_utils.insert_one({
+        result = db_utils.insert_one({
             "username": pending_user['user'],
             "password": pending_user['password'],
             "email": pending_user['email'],
@@ -127,7 +157,7 @@ def verify_email():
 
         db_pendingu.delete_one({"_id": pending_user["_id"]})
         session.pop('pending_user', None)
-        session['util'] = pending_user['user']
+        session['util'] = str(result.inserted_id)
 
         return redirect(url_for('index'))
     else:
