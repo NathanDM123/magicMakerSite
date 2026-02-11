@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <main>
+        <div class="diaporama">
+            <img src="{{ url_for('static', filename='img/1.jpg') }}" alt="img 1" class="active">
+            <img src="{{ url_for('static', filename='img/2.jpg') }}" alt="img 2">
+            <img src="{{ url_for('static', filename='img/3.jpg') }}" alt="img 3">
+        </div>
+    </main>
+{% endblock %}

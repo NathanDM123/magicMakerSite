@@ -1,0 +1,22 @@
+/* DIAPORAMA test */
+.diaporama {
+    position: relative;
+    width: 600px;
+    height: 350px;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px #000;
+}
+
+.diaporama img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.diaporama img.active {
+    opacity: 1;
+}

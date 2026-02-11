@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}banane{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='logo.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <div class="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
+        <header class="bg-[#e2f3f0] p-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/40 flex items-center justify-center rounded-full shadow-sm backdrop-blur-sm">
+                    <img src="{{ url_for('static', filename='logo.ico') }}" alt="Logo" class="w-8 h-8 object-contain opacity-80">
+                </div>
+                <h1 class="text-2xl font-medium tracking-tight text-slate-700">Nom du site</h1> 
+            </div>
+            
+            <nav class="flex items-center gap-8 text-slate-600">
+                <a href="#" class="font-medium hover:text-teal-700 transition">MENU (lien)</a> <!-- si tu lis ca, rassure toi je vais mettre des liens apres -->
+                <div class="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/80 transition shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+            </nav>
+        </header>
+
+        {% block content %}{% endblock %}
+
+        <footer class="bg-[#e2f3f0] p-4 text-center text-sm text-slate-500 border-t border-teal-50/50">
+            <p>Copyright & info complémentaires (dont un contact) © 2024</p>
+        </footer>
+    </div>
+</body>
+</html>
