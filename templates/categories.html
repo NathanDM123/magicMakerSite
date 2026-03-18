@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Catégories{% endblock %}
+
+{% block content %}
+<main class="flex-grow max-w-5xl mx-auto w-full p-8">
+    <h2 class="text-3xl font-bold text-slate-800 mb-2">Catégories</h2>
+    <p class="text-slate-500 mb-8">Parcourez les posts par catégorie.</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {% for cat in categories %}
+        <a href="{{ url_for('view_categorie', categorie=cat.nom) }}"
+           class="group bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-3 hover:shadow-md hover:border-teal-200 transition">
+            <div class="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center group-hover:bg-teal-100 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5l7 7-7 7-7-7V3z" />
+                </svg>
+            </div>
+            <span class="text-lg font-semibold text-slate-700 group-hover:text-teal-700 transition">{{ cat.nom }}</span>
+            <span class="text-sm text-slate-400">{{ cat.count }} post{% if cat.count != 1 %}s{% endif %}</span>
+        </a>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

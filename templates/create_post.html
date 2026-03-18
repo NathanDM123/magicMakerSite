@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main class="flex-grow flex flex-col items-center p-8 bg-slate-50">
+    {% if erreur %}
+    <div class="w-full max-w-4xl bg-red-50 text-red-800 border border-red-200 p-4 rounded-lg mb-6 flex items-center gap-2">
+        <span class="font-bold">!</span>
+        <span>{{ erreur }}</span>
+    </div>
+    {% endif %}
+
+    <div class="w-full max-w-4xl bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
+        <h2 class="text-3xl font-bold text-slate-800 mb-8">Créer un post</h2>
+
+        <form action="{{ url_for('create_post') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+            <div class="space-y-2">
+                <label for="titre" class="text-2xl font-semibold text-slate-700 block">Titre</label>
+                <input type="text" id="titre" name="titre" placeholder="Le sujet de votre post, de quoi parle t'il en deux mots?" required
+                       class="w-full px-4 py-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+            </div>
+
+            <div class="space-y-2">
+                <label for="description" class="text-2xl font-semibold text-slate-700 block">Description</label>
+                <textarea id="description" name="description" rows="6" placeholder="De quoi parle ton post? Racontes nous tout!" required
+                          class="w-full px-4 py-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-[#2d7a6e] outline-none resize-none"></textarea>
+            </div>
+
+            <div class="space-y-2">
+                <label for="categorie" class="text-2xl font-semibold text-slate-700 block">Catégorie</label>
+                <select id="categorie" name="categorie" onchange="toggleNewCat(this)"
+                        class="w-full px-4 py-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-[#2d7a6e] outline-none bg-white">
+                    {% for cat in categories %}
+                    <option value="{{ cat._id }}">{{ cat.nom }}</option>
+                    {% endfor %}
+                    <option value="new">+ Créer une nouvelle catégorie</option>
+                </select>
+                <input type="text" id="nouvelle_categorie" name="nouvelle_categorie" placeholder="Nom de la nouvelle catégorie"
+                       class="hidden mt-2 w-full px-4 py-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-2xl font-semibold text-slate-700 block">Image</label>
+                <div class="flex items-center justify-start">
+                    <label class="cursor-pointer bg-white border border-slate-300 px-6 py-2 rounded shadow-sm hover:bg-slate-50 transition-colors">
+                        <span class="text-slate-500">Import your image</span>
+                        <input type="file" name="image" class="hidden" accept="image/*">
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-100">
+                <button type="submit" class="bg-[#2d7a6e] hover:bg-[#246359] text-white font-bold py-3 px-10 rounded shadow transition-all active:scale-95">
+                    Publier le post
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+function toggleNewCat(select) {
+    const input = document.getElementById('nouvelle_categorie');
+    if (select.value === 'new') {
+        input.classList.remove('hidden');
+        input.required = true;
+    } else {
+        input.classList.add('hidden');
+        input.required = false;
+    }
+}
+</script>
+{% endblock %}

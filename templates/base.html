@@ -22,13 +22,17 @@
                 <h1 class="text-2xl font-medium tracking-tight text-slate-700">Nom du site</h1> 
             </div>
             
-            <nav class="flex items-center gap-8 text-slate-600">
-                <a href="#" class="font-medium hover:text-teal-700 transition">MENU (lien)</a> <!-- si tu lis ca, rassure toi je vais mettre des liens apres -->
-                <div class="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/80 transition shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </div>
+            <nav class="flex items-center gap-6 text-slate-600">
+                <a href="{{ url_for('index') }}" class="font-medium hover:text-teal-700 transition">Accueil</a>
+                <a href="{{ url_for('categories') }}" class="font-medium hover:text-teal-700 transition">Explorer</a>
+                <a href="{{ url_for('create_post') }}" class="font-medium hover:text-teal-700 transition">Créer un post</a>
+
+                {% if session.get('util') %}
+                    <a href="{{ url_for('logout') }}" class="bg-slate-200 text-slate-600 hover:bg-slate-300 transition font-medium px-4 py-1.5 rounded-full text-sm">Déconnexion</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="font-medium hover:text-teal-700 transition">Connexion</a>
+                    <a href="{{ url_for('register') }}" class="bg-teal-600 text-white hover:bg-teal-700 transition font-medium px-4 py-1.5 rounded-full text-sm">Inscription</a>
+                {% endif %}
             </nav>
         </header>
 

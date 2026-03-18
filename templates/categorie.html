@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ categorie }}{% endblock %}
+
+{% block content %}
+<main class="flex-grow max-w-4xl mx-auto w-full p-8">
+
+    <div class="flex items-center gap-3 mb-8">
+        <a href="{{ url_for('categories') }}" class="text-slate-400 hover:text-teal-600 transition text-sm">← Catégories</a>
+        <span class="text-slate-300">/</span>
+        <h2 class="text-2xl font-bold text-slate-800">c/{{ categorie }}</h2>
+        <span class="text-sm text-slate-400 ml-1">{{ posts|length }} post{% if posts|length != 1 %}s{% endif %}</span>
+    </div>
+
+    {% if posts %}
+    <div class="space-y-4">
+        {% for post in posts %}
+        <a href="{{ url_for('view_post', categorie=post.categorie, post_id=post._id) }}"
+           class="group flex gap-4 bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md hover:border-teal-200 transition">
+            {% if post.image %}
+            <div class="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-slate-100">
+                <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+            <div class="flex flex-col justify-between min-w-0">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-800 group-hover:text-teal-700 transition truncate">{{ post.titre }}</h3>
+                    <p class="text-slate-500 text-sm mt-1 line-clamp-2">{{ post.description }}</p>
+                </div>
+                <span class="text-xs text-slate-400 mt-2">Posté par u/{{ post.auteur_name }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 text-slate-400">
+        <p class="text-lg">Aucun post dans cette catégorie pour l'instant.</p>
+        {% if session.get('util') %}
+        <a href="{{ url_for('create_post') }}" class="mt-4 inline-block bg-teal-600 text-white px-5 py-2 rounded-full text-sm hover:bg-teal-700 transition">Créer le premier post</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}
