@@ -12,13 +12,10 @@ import secrets
 from mail_utils import send_verification_email
 from werkzeug.utils import secure_filename
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "6af3255620cb90e9bc3c0dc05bbe80481482f9d85af8feff" # mieux -> os.urandom(24) (en prod, en dev pas besoin)
+app.secret_key = "6af3255620cb90e9bc3c0dc05bbe80481482f9d85af8feff" # en prod -> os.urandom(24)
 
 mongo_uri = os.getenv("MONGO_URI")
 client = pymongo.MongoClient(mongo_uri)
@@ -39,41 +36,52 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+#######################################
+############### HELPERS ###############
+#######################################
 
-if db_categories.count_documents({}) == 0:
-    db_categories.insert_many([
-        {"nom": "Général"},
-        {"nom": "Technologie"},
-        {"nom": "Jeux Vidéo"},
-        {"nom": "Humour"}
-    ])
+def allowed_file(file):
+    if not '.' in file:
+        return False
+    
+    parts = file.rsplit('.', 1)
+    extension = parts[1].lower()
 
-def is_email(email: str) -> bool:
-    return bool(EMAIL_REGEX.match(email))
-
-def slugify(text):
-    text = text.lower()
-    text = re.sub(r'\s+', '-', text) 
-    return re.sub(r'[^\w\-]', '', text)
-
+    if extension in ALLOWED_EXTENSIONS:
+        return True
+    else:
+        return False
+    
+def is_email(email):
+    if EMAIL_REGEX.match(email):
+        return True
+    else:
+        return False
+    
 def get_username(id):
     if not id:
         return None
     
     try:
         user = db_utils.find_one({"_id": ObjectId(id)}, {"username": 1})
-        return user['username'] if user else None
-    except(InvalidId, TypeError):
+        if not user:
+            return None
+        else:
+            return user['username']
+    except (InvalidId, TypeError):
         return None
+
+#####################################
+############### INDEX ###############
+#####################################
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/test')
-def test():
-    return render_template('test.html')
+#########################################
+############### CONNEXION ###############
+#########################################
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
@@ -133,7 +141,7 @@ def register():
         return redirect(url_for('verify_email'))
     else:
         return render_template('register.html')    
-    
+
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if 'util' in session:
@@ -153,11 +161,11 @@ def login():
         return redirect(url_for('index'))
     else:
         return render_template("login.html")
-
+    
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    return redirect(url_for('index'))
 
 @app.route("/verify_email", methods=['GET', 'POST'])
 def verify_email():
@@ -202,6 +210,10 @@ def verify_email():
     else:
         return render_template("verify_mail.html")
     
+#####################################
+############### POSTS ###############
+#####################################
+
 @app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
     if 'util' not in session:
@@ -251,8 +263,6 @@ def create_post():
 
     return render_template('create_post.html', categories=categories)
 
-
-
 @app.route('/<categorie>/<post_id>')
 def view_post(categorie, post_id):
     try:
@@ -280,7 +290,6 @@ def view_categorie(categorie):
         abort(404)
     posts = list(db_posts.find({'categorie': categorie}).sort('created_at', -1))
     return render_template('categorie.html', categorie=categorie, posts=posts)
-    
 
 @app.route('/comment/<post_id>', methods=['POST'])
 def add_comment(post_id):
