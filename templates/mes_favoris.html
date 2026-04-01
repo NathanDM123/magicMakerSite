@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Mes favoris{% endblock %}
+
+{% block content %}
+<main class="flex-grow max-w-5xl mx-auto w-full p-8">
+    <h2 class="text-3xl font-bold text-slate-800 mb-2">Mes favoris</h2>
+    <p class="text-slate-500 mb-8">Tes posts sauvegardés.</p>
+
+    {% if posts %}
+    <div class="space-y-4">
+        {% for post in posts %}
+        <a href="{{ url_for('view_post', categorie=post.categorie, post_id=post._id) }}"
+           class="group flex gap-4 bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md hover:border-teal-200 transition">
+            {% if post.image %}
+            <div class="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-slate-100">
+                <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="" class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+            <div class="flex flex-col justify-between min-w-0">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-800 group-hover:text-teal-700 transition truncate">{{ post.titre }}</h3>
+                    <p class="text-slate-500 text-sm mt-1 line-clamp-2">{{ post.description }}</p>
+                </div>
+                <span class="text-xs text-slate-400 mt-2">c/{{ post.categorie }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 text-slate-400">
+        <p class="text-lg">Tu n'as aucun favori pour le moment.</p>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

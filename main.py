@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session, request, abort
+from flask import Flask, render_template, redirect, url_for, session, request, abort, flash
 import os
 import pymongo
 import bcrypt
@@ -115,7 +115,8 @@ def register():
                 "username": user,
                 "password": pswd_hash,
                 "email": "no_mail",
-                "role": "user"
+                "role": "user",
+                "favoris": []
             })
 
             session['util'] = str(result.inserted_id)
@@ -155,6 +156,9 @@ def login():
 
         if not user_found or not bcrypt.checkpw(pswd.encode('utf-8'), user_found['password']):
             return render_template("login.html", erreur="Identifiants incorrects")
+
+        if 'favoris' not in user_found:
+            db_utils.update_one({'_id': user_found['_id']}, {'$set': {'favoris': []}})
         
         session['util'] = str(user_found['_id'])
         session['username'] = user_found['username']
@@ -199,7 +203,8 @@ def verify_email():
             "username": pending_user['user'],
             "password": pending_user['password'],
             "email": pending_user['email'],
-            "role": "user"
+            "role": "user",
+            "favoris": []
         })
 
         db_pendingu.delete_one({"_id": pending_user["_id"]})
@@ -269,10 +274,16 @@ def view_post(categorie, post_id):
         post = db_posts.find_one({"_id": ObjectId(post_id)})
         if not post:
             abort(404)
+
+        est_en_favori = False
+        if session.get('util'):
+            utilisateur = db_utils.find_one({'_id': ObjectId(session['util'])}, {'favoris': 1})
+            favoris = utilisateur.get('favoris', []) if utilisateur else []
+            est_en_favori = any(str(f) == post_id for f in favoris)
         
         comments = list(db_comments.find({"post_id": ObjectId(post_id)}).sort("created_at", -1))
         
-        return render_template('view_post.html', post=post, comments=comments)
+        return render_template('view_post.html', post=post, comments=comments, est_en_favori=est_en_favori)
     except (InvalidId, TypeError):
         abort(404)
 
@@ -314,6 +325,103 @@ def add_comment(post_id):
     })
 
     return redirect(request.referrer)
+
+
+
+
+@app.route('/favori/<id>', methods=['POST'])
+def toggle_favori(id):
+    if not session.get('util'):
+        return redirect(url_for('login'))
+
+    try:
+        annonce_id = ObjectId(id)
+        utilisateur_id = ObjectId(session['util'])
+
+        if not db_posts.find_one({'_id': annonce_id}):
+            abort(404)
+
+        utilisateur = db_utils.find_one({'_id': utilisateur_id}, {'favoris': 1})
+        if not utilisateur:
+            return redirect(url_for('login'))
+
+        favoris = utilisateur.get('favoris', [])
+        deja_favori = any(str(f) == id for f in favoris)
+
+        if deja_favori:
+            db_utils.update_one({'_id': utilisateur_id}, {'$pull': {'favoris': annonce_id}})
+        else:
+            db_utils.update_one({'_id': utilisateur_id}, {'$addToSet': {'favoris': annonce_id}})
+
+        post = db_posts.find_one({'_id': annonce_id})
+        if post:
+            return redirect(request.referrer or url_for('view_post', categorie=post['categorie'], post_id=id))
+
+        return redirect(request.referrer or url_for('index'))
+    except (InvalidId, TypeError):
+        abort(404)
+
+######################################
+############### FAVORIS ##############
+######################################
+
+# Page des favoris de l'utilisateur connecté
+@app.route('/mes-favoris')
+def mes_favoris():
+    if not session.get('util'):
+        return redirect(url_for('login'))
+
+    try:
+        utilisateur = db_utils.find_one({'_id': ObjectId(session['util'])}, {'favoris': 1})
+        if not utilisateur:
+            return redirect(url_for('login'))
+
+        ids_favoris_raw = utilisateur.get('favoris', [])
+        ids_favoris = []
+        for fav_id in ids_favoris_raw:
+            if isinstance(fav_id, ObjectId):
+                ids_favoris.append(fav_id)
+            else:
+                try:
+                    ids_favoris.append(ObjectId(str(fav_id)))
+                except InvalidId:
+                    continue
+
+        posts_favoris = list(db_posts.find({'_id': {'$in': ids_favoris}}).sort('created_at', -1))
+
+        return render_template('mes_favoris.html', posts=posts_favoris)
+    except (InvalidId, TypeError):
+        abort(404)
+
+
+######################################
+############### PROFIL ###############
+######################################
+
+@app.route('/profil', methods=['GET'])
+def profil():
+    if 'util' not in session:
+        return redirect(url_for('login'))
+
+    return render_template('profil.html')
+
+@app.route('/update-bio', methods=['POST'])
+def update_bio():
+    if 'util' not in session:
+        return redirect(url_for('login'))
     
+    user = session['util']
+    new_bio = request.form.get('bio', '').strip()
+
+    db_utils.update_one(
+        {"username": user},
+        {"$set": {"bio": new_bio}}
+    )
+
+    return redirect(url_for("profil"))
+
+    
+    
+
 
 app.run(host="127.0.0.1", port=81) # A CHANGER EN PROD PAS DE 127.0.0.1!!! -> 0.0.0.0 en prod

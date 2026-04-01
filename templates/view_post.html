@@ -23,6 +23,22 @@
                 <p class="text-slate-700 leading-relaxed whitespace-pre-line text-lg">
                     {{ post.description }}
                 </p>
+
+                {% if session.get('util') %}
+                <form method="POST" action="{{ url_for('toggle_favori', id=post._id) }}" class="mt-6">
+                    {% if est_en_favori %}
+                    <button type="submit"
+                        class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-6 rounded-full cursor-pointer transition">
+                        ★ Retirer des favoris
+                    </button>
+                    {% else %}
+                    <button type="submit"
+                        class="bg-gray-700 hover:bg-yellow-400 hover:text-black text-white font-bold py-2 px-6 rounded-full cursor-pointer transition">
+                        ☆ Ajouter aux favoris
+                    </button>
+                    {% endif %}
+                </form>
+                {% endif %}
             </div>
         </article>
 
