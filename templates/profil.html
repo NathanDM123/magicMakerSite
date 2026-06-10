@@ -3,28 +3,33 @@
 {% block title %}Mon profil{% endblock %}
 
 {% block content %}
-<main class="flex-grow w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+<main class="flex-grow w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="h-28 bg-gradient-to-r from-teal-100 via-emerald-50 to-slate-100"></div>
 
         <div class="px-5 sm:px-8 pb-6 -mt-14">
             <div class="w-24 h-24 rounded-full bg-white border-4 border-white shadow flex items-center justify-center text-2xl font-bold text-teal-700">
-                {{ (user.username[0] if user and user.username else session.get('username', 'U')[0])|upper }}
+                {{ (user.username[0] if user and user.username else 'U')|upper }}
             </div>
 
-            <div class="mt-4 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div class="mt-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <div class="text-slate-800 font-semibold text-2xl">{{ user.username }}</div>
+                    <p class="text-sm text-slate-500 mt-1">{{ user.email if user.email else 'Aucun email renseigné' }}</p>
+                </div>
+
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ url_for('create_post') }}" class="bg-[#2d7a6e] hover:bg-[#246359] text-white font-semibold px-4 py-2 rounded-lg transition">
                         Créer un post
                     </a>
-                    <a href="{{ url_for('logout') }}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg transition">
+                    <a href="{{ url_for('logout') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg transition">
                         Déconnexion
                     </a>
                 </div>
             </div>
 
             <p class="mt-4 text-slate-600 leading-relaxed max-w-3xl">
-                {{ user.bio if user and user.bio else 'Ajoute une bio pour que les autres sachent ce que tu aimes partager.' }}
+                {{ user.bio if user.bio else 'Ajoute une bio pour que les autres sachent ce que tu aimes partager.' }}
             </p>
 
             <form action="{{ url_for('update_bio') }}" method="POST" class="mt-4 max-w-3xl">
@@ -36,7 +41,7 @@
                     maxlength="300"
                     placeholder="Parle un peu de toi..."
                     class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none resize-none"
-                >{{ user.bio if user and user.bio else '' }}</textarea>
+                >{{ user.bio if user.bio else '' }}</textarea>
                 <div class="mt-3">
                     <button type="submit" class="bg-[#2d7a6e] hover:bg-[#246359] text-white font-semibold px-4 py-2 rounded-lg transition">
                         Enregistrer la bio
@@ -44,6 +49,60 @@
                 </div>
             </form>
         </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Informations du profil</h2>
+            <form action="{{ url_for('update_profile_info') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Pseudo</label>
+                    <input type="text" name="username" value="{{ user.username }}" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                    <input type="email" name="email" value="{{ user.email if user.email != 'no_mail' else '' }}" placeholder="email@exemple.com" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-[#2d7a6e] hover:bg-[#246359] text-white font-semibold px-4 py-2 rounded-lg transition">Mettre à jour</button>
+                </div>
+            </form>
+        </article>
+
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Changer le mot de passe</h2>
+            <form action="{{ url_for('change_password') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Mot de passe actuel</label>
+                    <input type="password" name="current_password" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nouveau mot de passe</label>
+                    <input type="password" name="new_password" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Confirmer le mot de passe</label>
+                    <input type="password" name="confirm_password" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2d7a6e] outline-none">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-[#2d7a6e] hover:bg-[#246359] text-white font-semibold px-4 py-2 rounded-lg transition">Modifier</button>
+                </div>
+            </form>
+        </article>
+
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Supprimer le compte</h2>
+            <p class="text-sm text-slate-600 mb-4">Cette action est irréversible. Le compte et les données associées seront supprimés.</p>
+            <form action="{{ url_for('delete_account') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Écrire <span class="font-mono">SUPPRIMER</span> pour confirmer</label>
+                    <input type="text" name="confirm_delete" placeholder="SUPPRIMER" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-400 outline-none">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg transition">Supprimer mon compte</button>
+                </div>
+            </form>
+        </article>
     </section>
 
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -65,7 +124,7 @@
         <article class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
             <p class="text-sm text-slate-500">Membre depuis</p>
             <p class="text-lg font-semibold text-slate-800 mt-2">
-                {{ user.created_at.strftime('%d/%m/%Y') if user and user.created_at else 'Date inconnue' }}
+                {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'Date inconnue' }}
             </p>
         </article>
     </section>
@@ -74,9 +133,7 @@
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-5">
                 <h3 class="text-xl font-bold text-slate-800">Mes derniers posts</h3>
-                <a href="{{ url_for('categories') }}" class="text-sm font-semibold text-teal-700 hover:text-teal-800 transition">
-                    Explorer +
-                </a>
+                <a href="{{ url_for('categories') }}" class="text-sm font-semibold text-teal-700 hover:text-teal-800 transition">Explorer +</a>
             </div>
 
             <div class="space-y-4">
@@ -88,24 +145,16 @@
                             <span>-</span>
                             <span>{{ post.created_at.strftime('%d/%m/%Y') if post.created_at else 'date inconnue' }}</span>
                         </div>
-
                         <h4 class="text-lg font-semibold text-slate-800 leading-snug">
-                            <a href="{{ url_for('view_post', categorie=post.categorie, post_id=post._id) }}" class="hover:text-teal-700 transition">
-                                {{ post.titre }}
-                            </a>
+                            <a href="{{ url_for('view_post', categorie=post.categorie, post_id=post._id) }}" class="hover:text-teal-700 transition">{{ post.titre }}</a>
                         </h4>
-
-                        <p class="text-slate-600 mt-2 line-clamp-2">
-                            {{ post.description }}
-                        </p>
+                        <p class="text-slate-600 mt-2 line-clamp-2">{{ post.description }}</p>
                     </article>
                     {% endfor %}
                 {% else %}
                     <div class="bg-slate-50 border border-dashed border-slate-300 rounded-lg p-6 text-center">
                         <p class="text-slate-500">Tu n'as pas encore publié de post.</p>
-                        <a href="{{ url_for('create_post') }}" class="inline-block mt-3 text-teal-700 font-semibold hover:underline">
-                            Créer mon premier post
-                        </a>
+                        <a href="{{ url_for('create_post') }}" class="inline-block mt-3 text-teal-700 font-semibold hover:underline">Créer mon premier post</a>
                     </div>
                 {% endif %}
             </div>
@@ -113,15 +162,12 @@
 
         <aside class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-xl font-bold text-slate-800 mb-5">Derniers commentaires</h3>
-
             <div class="space-y-4">
                 {% if recent_comments %}
                     {% for comment in recent_comments %}
                     <div class="border-l-2 border-teal-200 pl-3">
                         <p class="text-slate-700 text-sm leading-relaxed">{{ comment.contenu }}</p>
-                        <p class="text-xs text-slate-500 mt-1">
-                            {{ comment.created_at.strftime('%d/%m/%Y %H:%M') if comment.created_at else 'date inconnue' }}
-                        </p>
+                        <p class="text-xs text-slate-500 mt-1">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') if comment.created_at else 'date inconnue' }}</p>
                     </div>
                     {% endfor %}
                 {% else %}

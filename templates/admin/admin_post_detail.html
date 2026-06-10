@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Administration | {{ post.titre }}{% endblock %}
+
+{% block content %}
+<main class="flex-grow w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="h-24 bg-gradient-to-r from-teal-100 via-emerald-50 to-slate-100"></div>
+        <div class="px-5 sm:px-8 pb-6 -mt-10">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-wide text-teal-700 font-semibold">Administration</p>
+                    <h1 class="text-3xl font-bold text-slate-900 mt-2">Post : {{ post.titre }}</h1>
+                    <p class="text-sm text-slate-600 mt-2">Modifie ou supprime ce post.</p>
+                </div>
+                <a href="{{ url_for('view_post', categorie=post.categorie, post_id=post._id) }}" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#2d7a6e] text-white hover:bg-[#246359] transition">Voir sur le site</a>
+            </div>
+
+            <div class="mt-5 grid gap-6 lg:grid-cols-3">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-sm text-slate-500">Auteur</p>
+                    <p class="text-lg font-semibold text-slate-900 mt-2">{{ post.auteur_name or 'Inconnu' }}</p>
+                    <p class="text-sm text-slate-500 mt-4">Catégorie</p>
+                    <p class="text-base font-semibold text-slate-800">{{ post.categorie }}</p>
+                    <p class="text-sm text-slate-500 mt-4">Publié le</p>
+                    <p class="text-base text-slate-800">{{ post.created_at.strftime('%d/%m/%Y %H:%M') if post.created_at else 'Date inconnue' }}</p>
+                </div>
+                <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">Contenu du post</h2>
+                    <p class="text-slate-700 mb-4">{{ post.description }}</p>
+                    {% if post.image %}
+                    <div class="overflow-hidden rounded-2xl border border-slate-200">
+                        <img src="{{ url_for('static', filename='uploads/' ~ post.image) }}" alt="Image du post" class="w-full object-cover">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-6 lg:grid-cols-2">
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Modifier le post</h2>
+            <form method="POST" action="{{ url_for('admin_post_detail', post_id=post_id) }}" class="space-y-5">
+                <input type="hidden" name="action" value="update_post">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Titre</label>
+                    <input type="text" name="titre" value="{{ post.titre }}" required class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                    <textarea name="description" rows="6" required class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none">{{ post.description }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Catégorie</label>
+                    <select name="categorie" class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none">
+                        {% for cat in categories %}
+                            <option value="{{ cat.nom }}" {{ 'selected' if cat.nom == post.categorie else '' }}>{{ cat.nom }}</option>
+                        {% endfor %}
+                        <option value="new">Créer une nouvelle catégorie</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nouvelle catégorie</label>
+                    <input type="text" name="nouvelle_categorie" placeholder="Nouvelle catégorie" class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="rounded-lg bg-[#2d7a6e] px-5 py-3 text-sm font-semibold text-white hover:bg-[#246359] transition">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </article>
+
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">Supprimer le post</h2>
+            <p class="text-sm text-slate-600 mb-4">Cette action supprimera le post et tous les commentaires associés.</p>
+            <form method="POST" action="{{ url_for('admin_post_detail', post_id=post_id) }}">
+                <input type="hidden" name="action" value="delete_post">
+                <button type="submit" class="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 transition">Supprimer définitivement</button>
+            </form>
+        </article>
+    </section>
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-xl font-bold text-slate-800 mb-4">Commentaires ({{ comments|length }})</h2>
+        {% if comments %}
+            <div class="space-y-4">
+                {% for comment in comments %}
+                <div class="border border-slate-200 rounded-lg p-4">
+                    <div class="flex items-center justify-between gap-4 mb-2">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">{{ comment.auteur_name or 'Auteur inconnu' }}</p>
+                            <p class="text-xs text-slate-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') if comment.created_at else 'Date inconnue' }}</p>
+                        </div>
+                        <form method="POST" action="{{ url_for('admin_delete_comment', comment_id=comment._id) }}" class="inline-block">
+                            <button type="submit" class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition">Supprimer</button>
+                        </form>
+                    </div>
+                    <p class="text-slate-700 text-sm">{{ comment.contenu }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-slate-500">Aucun commentaire sur ce post.</p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

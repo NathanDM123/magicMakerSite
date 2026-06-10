@@ -28,6 +28,7 @@
                 <a href="{{ url_for('create_post') }}" class="font-medium hover:text-teal-700 transition">Créer un post</a>
 
                 {% if session.get('util') %}
+                    <a href="{{ url_for('profil') }}" class="font-medium hover:text-teal-700 transition">Profil</a>
                     <a href="{{ url_for('logout') }}" class="bg-slate-200 text-slate-600 hover:bg-slate-300 transition font-medium px-4 py-1.5 rounded-full text-sm">Déconnexion</a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="font-medium hover:text-teal-700 transition">Connexion</a>
@@ -35,6 +36,18 @@
                 {% endif %}
             </nav>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="max-w-6xl mx-auto p-4 sm:px-6 lg:px-8">
+                    {% for category, message in messages %}
+                        <div class="mb-3 rounded-2xl border px-4 py-3 text-sm shadow-sm {{ 'bg-emerald-50 text-emerald-800 border-emerald-200' if category == 'success' else 'bg-red-50 text-red-800 border-red-200' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
 
         {% block content %}{% endblock %}
 
