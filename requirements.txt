@@ -3,3 +3,8 @@ pymongo
 bcrypt
 python-dotenv
 Werkzeug
+gunicorn
+requests
+jinja2
+dnspython
+dotenv
